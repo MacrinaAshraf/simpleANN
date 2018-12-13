@@ -22,6 +22,8 @@ public class NeuralNetwork {
 	
 	 float[][]ihWeights;
 	 public float[][] hoWeights ;
+	 float[]netIHWeights;
+	 float[]netOHWeights;
 	  List<Float> OutputNodes = new ArrayList<Float>();
 	 
 	
@@ -94,13 +96,13 @@ public class NeuralNetwork {
 	}
 	
 	public void initializeWeights() {
-		ihWeights = new float[inputNodesSize][hiddenNodesSize] ;
-		hoWeights = new float[hiddenNodesSize][outputNodesSize];
+		ihWeights = new float[hiddenNodesSize][inputNodesSize] ;
+		hoWeights = new float[outputNodesSize][hiddenNodesSize];
 		
 		
-		for(int i=0;i<inputNodesSize;i++) {
+		for(int i=0;i<hiddenNodesSize;i++) {
 			
-		 for(int j=0;j<hiddenNodesSize;j++) {
+		 for(int j=0;j<inputNodesSize;j++) {
 			    
 			    ihWeights[i][j] = getRandVal();
 			  
@@ -109,20 +111,22 @@ public class NeuralNetwork {
 		}
 		
 		
-		for(int i=0;i<hiddenNodesSize;i++) {
+		for(int i=0;i<outputNodesSize;i++) {
 			
-			for(int j=0;j<outputNodesSize;j++) {
-				hoWeights[0][0] = getRandVal();
+			for(int j=0;j<hiddenNodesSize;j++) {
+				hoWeights[i][j] = getRandVal();
 			}
 		}
-		
+		for(int i=0;i<hiddenNodesSize;i++) {
+			
+			 for(int j=0;j<inputNodesSize;j++) {
+			System.out.println(ihWeights[i][j]);
+			}
+		}
 		
 	}
 	
 	
-	
-	
-
 	public double sigmoidFunction(double sigmoidNode){
 		return (1/(1+  java.lang.Math.pow(Math.E,-1*sigmoidNode)));
 		
@@ -131,6 +135,36 @@ public class NeuralNetwork {
 	public double sigmoidDerivative (double output)
 	{
 		return output*(1-output);
+	}
+	public void matrixMultiplication(){
+		 netIHWeights = new float[hiddenNodesSize];
+		 netOHWeights = new float[outputNodesSize];
+		for(int i=0;i<hiddenNodesSize;i++)
+		{
+			for(int j =0;j<inputNodesSize;j++)
+			{
+					netIHWeights[i]+=ihWeights[i][j]*inputNodes.get(j);
+			}
+			
+		}
+        for(int i=0;i<outputNodesSize;i++) 
+        {
+			
+			for(int j=0;j<hiddenNodesSize;j++)
+			{
+				 netOHWeights[i] +=hoWeights[i][j]*netIHWeights[j];
+			}
+		}
+		for(int i=0;i<hiddenNodesSize;i++)
+		{
+			
+				System.out.println("Hiden Marix["+netIHWeights[i]+"]");
+			}
+		for(int i=0;i<outputNodesSize;i++)
+		{
+			
+				System.out.println("Outpu Matrix ["+netOHWeights[i]+"]");
+			}
 	}
 	
 	

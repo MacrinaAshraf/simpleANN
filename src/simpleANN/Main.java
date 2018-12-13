@@ -9,7 +9,7 @@ public class Main {
 		n.readFile("SimpleExample.txt");
 
 		n.initializeWeights();
-		
+		n.matrixMultiplication();
 	}
 
 }
