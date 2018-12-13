@@ -108,6 +108,7 @@ public class NeuralNetwork {
 				
 		}
 		
+		
 		for(int i=0;i<hiddenNodesSize;i++) {
 			
 			for(int j=0;j<outputNodesSize;j++) {
