@@ -1,11 +1,14 @@
 package simpleANN;
 
+
 import java.io.BufferedReader;
 import java.io.FileNotFoundException;
 import java.io.FileReader;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
+import  java.lang.Math;
+
 
 public class NeuralNetwork {
 	
@@ -17,6 +20,7 @@ public class NeuralNetwork {
 	
 	
 	public void readFile(String filePath) {
+
 		
 		FileReader filereader;
 		BufferedReader in ;
@@ -73,7 +77,15 @@ public class NeuralNetwork {
 		
 	}
 
-	public void sigmoidFunction() {
+	public double sigmoidFunction(double sigmoidNode){
+		return (1/(1+  java.lang.Math.pow(Math.E,-1*sigmoidNode)));
 		
 	}
+	
+	public double sigmoidDerivative (double output)
+	{
+		return output*(1-output);
+	}
+	
+	
 }
