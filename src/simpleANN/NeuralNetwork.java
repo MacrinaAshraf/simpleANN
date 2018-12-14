@@ -16,23 +16,26 @@ public class NeuralNetwork {
 	 int inputNodesSize , hiddenNodesSize,outputNodesSize;
 	 int trainingSetSize;
 	 
-	 List<Float> inputNodes = new ArrayList<Float>();
-	 List<Float> hiddenNodes = new ArrayList<Float>();
-	 List<Float> finlaOutputNodes = new ArrayList<Float>();
+	 float[][] inputNodes;
+	 float[][] hiddenNodes;
+	 float[][] finalOutputNodes;
 	
 	 float[][]ihWeights;
-	 public float[][] hoWeights ;
+	 float[][]hoWeights ;
 	 float[]netIHWeights;
 	 float[]netOHWeights;
-	 float []I;
-	 float []O;
-	  List<Float> OutputNodes = new ArrayList<Float>();
+	 float[]I;
+	 float[]O;
+	 float[]OutputNodes;
+	 float MSE;
 	 
 	
 	 
 	
 	public void readFile(String filePath) {
 
+		
+		
 		
 		FileReader filereader;
 		BufferedReader in ;
@@ -49,9 +52,14 @@ public class NeuralNetwork {
 			hiddenNodesSize = Integer.parseInt(tmp[1]);
 			outputNodesSize = Integer.parseInt(tmp[2]);
 			
+			
 			tmp[0] = in.readLine();
 			
 			trainingSetSize = Integer.parseInt(tmp[0]);
+			
+			inputNodes = new float[trainingSetSize][inputNodesSize];
+			hiddenNodes = new float[trainingSetSize][hiddenNodesSize];
+			finalOutputNodes = new float[trainingSetSize][outputNodesSize];
 			
 			for(int i=0;i<trainingSetSize;i++)
 			{
@@ -61,17 +69,18 @@ public class NeuralNetwork {
 				for(int j=0, x=0 ;j<tmp.length;j++) {
 					
 					if(j < inputNodesSize ) {
-						inputNodes.add(j, Float.parseFloat(tmp[j]));
+						inputNodes[i][j]= Float.parseFloat(tmp[j]);
 					}
 					
 					else {
-						finlaOutputNodes.add(x, Float.parseFloat(tmp[j]));
+						finalOutputNodes[i][x]= Float.parseFloat(tmp[j]);
 						x++;
 					}
 				}
 				
 				
 			}
+			
 			
 			
 		}
@@ -96,6 +105,8 @@ public class NeuralNetwork {
 		 return x;
 		 
 	}
+	
+	
 	
 	public void initializeWeights() {
 		ihWeights = new float[hiddenNodesSize][inputNodesSize] ;
@@ -134,7 +145,8 @@ public class NeuralNetwork {
 		return output*(1-output);
 	}
 	
-	public void matrixMultiplication(){
+	
+	public void matrixMultiplication(int input_data_index ){
 		 netIHWeights = new float[hiddenNodesSize];
 		 netOHWeights = new float[outputNodesSize];
 		 I = new float [hiddenNodesSize];
@@ -144,15 +156,14 @@ public class NeuralNetwork {
 		{
 			for(int j =0;j<inputNodesSize;j++)
 			{
-					netIHWeights[i]+=ihWeights[i][j]*inputNodes.get(j);
+					netIHWeights[i]+=ihWeights[i][j]*inputNodes[input_data_index][j];
 			}	
 		}
 		
-		for(int i=0; i < hiddenNodesSize ; i++) //applying activation function (sigmoid function) 
+		//applying activation function (sigmoid function) 
+		for(int i=0; i < hiddenNodesSize ; i++) 
 			I[i]=(float) sigmoidFunction( netIHWeights[i] );
 				
-		
-		
 		
 		
         for(int i=0;i<outputNodesSize;i++) 
@@ -172,5 +183,24 @@ public class NeuralNetwork {
 		for(int i=0;i<outputNodesSize;i++)
 			System.out.println("Outpu Matrix ["+O[i]+"]");
 	}
+	
+	
+	void computeMSE(int input_data_index) {
+		
+		 for(int i=0;i<outputNodesSize;i++) {
+			 MSE += finalOutputNodes[input_data_index][i] - O[i];
+		 }
+		 MSE*=0.5;
+	}
+	
+	
+	void backPropagation() {
+		
+		
+		
+	}
+	
+	
+	
 	
 }
