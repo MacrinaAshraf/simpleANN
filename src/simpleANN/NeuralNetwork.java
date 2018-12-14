@@ -24,6 +24,8 @@ public class NeuralNetwork {
 	 public float[][] hoWeights ;
 	 float[]netIHWeights;
 	 float[]netOHWeights;
+	 float []I;
+	 float []O;
 	  List<Float> OutputNodes = new ArrayList<Float>();
 	 
 	
@@ -105,12 +107,9 @@ public class NeuralNetwork {
 		 for(int j=0;j<inputNodesSize;j++) {
 			    
 			    ihWeights[i][j] = getRandVal();
-			  
-		 }		
-				
+		 }				
 		}
-		
-		
+			
 		for(int i=0;i<outputNodesSize;i++) {
 			
 			for(int j=0;j<hiddenNodesSize;j++) {
@@ -122,10 +121,8 @@ public class NeuralNetwork {
 			 for(int j=0;j<inputNodesSize;j++) {
 			System.out.println(ihWeights[i][j]);
 			}
-		}
-		
+		}	
 	}
-	
 	
 	public double sigmoidFunction(double sigmoidNode){
 		return (1/(1+  java.lang.Math.pow(Math.E,-1*sigmoidNode)));
@@ -136,36 +133,44 @@ public class NeuralNetwork {
 	{
 		return output*(1-output);
 	}
+	
 	public void matrixMultiplication(){
 		 netIHWeights = new float[hiddenNodesSize];
 		 netOHWeights = new float[outputNodesSize];
+		 I = new float [hiddenNodesSize];
+		 O = new float[outputNodesSize];
+		 
 		for(int i=0;i<hiddenNodesSize;i++)
 		{
 			for(int j =0;j<inputNodesSize;j++)
 			{
 					netIHWeights[i]+=ihWeights[i][j]*inputNodes.get(j);
-			}
-			
+			}	
 		}
+		
+		for(int i=0; i < hiddenNodesSize ; i++) //applying activation function (sigmoid function) 
+			I[i]=(float) sigmoidFunction( netIHWeights[i] );
+				
+		
+		
+		
+		
         for(int i=0;i<outputNodesSize;i++) 
         {
-			
 			for(int j=0;j<hiddenNodesSize;j++)
 			{
-				 netOHWeights[i] +=hoWeights[i][j]*netIHWeights[j];
+				 netOHWeights[i] +=hoWeights[i][j]*I[j];
 			}
 		}
+        
+        for(int i=0; i < outputNodesSize ; i++) //applying activation function (sigmoid function) 
+			O[i]=(float) sigmoidFunction( netOHWeights[i] );
+		 
 		for(int i=0;i<hiddenNodesSize;i++)
-		{
-			
-				System.out.println("Hiden Marix["+netIHWeights[i]+"]");
-			}
+			System.out.println("Hiden Marix["+I[i]+"]");
+		
 		for(int i=0;i<outputNodesSize;i++)
-		{
-			
-				System.out.println("Outpu Matrix ["+netOHWeights[i]+"]");
-			}
+			System.out.println("Outpu Matrix ["+O[i]+"]");
 	}
-	
 	
 }

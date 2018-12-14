@@ -7,7 +7,7 @@ public class Main {
 		NeuralNetwork n = new NeuralNetwork();
 		
 		n.readFile("SimpleExample.txt");
-
+		
 		n.initializeWeights();
 		n.matrixMultiplication();
 	}
