@@ -16,26 +16,27 @@ public class NeuralNetwork {
 	 int inputNodesSize , hiddenNodesSize,outputNodesSize;
 	 int trainingSetSize;
 	 
-	 float[][] inputNodes;
-	 float[][] hiddenNodes;
-	 float[][] finalOutputNodes;
+	 float[][] inputNodes; //input values
+	 float[][] hiddenNodes; //hidden layer values
+	 float[][] finalOutputNodes; //desired/actual outputs
 	
-	 float[][]ihWeights;
-	 float[][]hoWeights ;
+	 float[][]ihWeights; //weights between input layer and hidden layer
+	 float[][]hoWeights ; //weights between hidden layer and output layer
 	 float[]netIHWeights;
 	 float[]netOHWeights;
-	 float[]I;
-	 float[]O;
+	 float[][]I;
+	 float[][]O;
 	 float MSE;
-	 double learningRate=0.4;
+	 double learningRate=0.4; //can be between 0.1-0.8 (tune it to make better results)
 	 
-	
+	 //will break when it reaches these acceptable errors otherwise will run all max_epochs.
+     double max_acceptable_error = 0.004; 
+     double min_acceptable_error = -0.004;
+     int max_epochs = 500; //number of iterations on all the data set.
+	 
 	 
 	
 	public void readFile(String filePath) {
-
-		
-		
 		
 		FileReader filereader;
 		BufferedReader in ;
@@ -64,11 +65,12 @@ public class NeuralNetwork {
 			for(int i=0;i<trainingSetSize;i++)
 			{
 				
-				tmp = in.readLine().split("\\s+");
+				tmp = in.readLine().trim().split("\\s+");
 				
 				for(int j=0, x=0 ;j<tmp.length;j++) {
-					
+				
 					if(j < inputNodesSize ) {
+						//System.out.println(tmp[2]);
 						inputNodes[i][j]= Float.parseFloat(tmp[j]);
 					}
 					
@@ -81,8 +83,7 @@ public class NeuralNetwork {
 				
 			}
 			
-			
-			
+			filereader.close();
 		}
 	    
 		catch (FileNotFoundException e) {
@@ -113,26 +114,34 @@ public class NeuralNetwork {
 		hoWeights = new float[outputNodesSize][hiddenNodesSize];
 		
 		
-		for(int i=0;i<hiddenNodesSize;i++) {
+		for(int i=0;i<hiddenNodesSize;i++) 
+		{
 			
-		 for(int j=0;j<inputNodesSize;j++) {
+		   for(int j=0;j<inputNodesSize;j++) 
+		   {
 			    
 			    ihWeights[i][j] = getRandVal();
-		 }				
+		   }				
 		}
 			
-		for(int i=0;i<outputNodesSize;i++) {
+		for(int i=0;i<outputNodesSize;i++) 
+		{
 			
-			for(int j=0;j<hiddenNodesSize;j++) {
+			for(int j=0;j<hiddenNodesSize;j++) 
+			{
 				hoWeights[i][j] = getRandVal();
 			}
 		}
-		for(int i=0;i<hiddenNodesSize;i++) {
-			
-			 for(int j=0;j<inputNodesSize;j++) {
-			System.out.println(ihWeights[i][j]);
+		/*
+		for(int i=0;i<hiddenNodesSize;i++) 
+		{
+			 for(int j=0;j<inputNodesSize;j++) 
+			{
+			  System.out.println(ihWeights[i][j]);
 			}
 		}	
+		
+		*/
 	}
 	
 	public double sigmoidFunction(double sigmoidNode){
@@ -146,11 +155,11 @@ public class NeuralNetwork {
 	}
 	
 	
-	public void matrixMultiplication(int input_data_index ){
+	public void feedForward(int input_data_index ){
 		 netIHWeights = new float[hiddenNodesSize];
 		 netOHWeights = new float[outputNodesSize];
-		 I = new float [hiddenNodesSize];
-		 O = new float[outputNodesSize];
+		 I = new float [trainingSetSize][hiddenNodesSize];
+		 O = new float [trainingSetSize][outputNodesSize];
 		 
 		for(int i=0;i<hiddenNodesSize;i++)
 		{
@@ -162,7 +171,7 @@ public class NeuralNetwork {
 		
 		//applying activation function (sigmoid function) 
 		for(int i=0; i < hiddenNodesSize ; i++) 
-			I[i]=(float) sigmoidFunction( netIHWeights[i] );
+			I[input_data_index][i]=(float) sigmoidFunction( netIHWeights[i] );
 				
 		
 		
@@ -170,28 +179,56 @@ public class NeuralNetwork {
         {
 			for(int j=0;j<hiddenNodesSize;j++)
 			{
-				 netOHWeights[i] +=hoWeights[i][j]*I[j];
+				 netOHWeights[i] +=hoWeights[i][j]*I[input_data_index][j];
 			}
 		}
         
         //applying activation function (sigmoid function) 
         for(int i=0; i < outputNodesSize ; i++) 
-			O[i]=(float) sigmoidFunction( netOHWeights[i] );
-		 
+			O[input_data_index][i]=(float) sigmoidFunction( netOHWeights[i] );
+		/* 
 		for(int i=0;i<hiddenNodesSize;i++)
 			System.out.println("Hidden Marix["+I[i]+"]");
 		
 		for(int i=0;i<outputNodesSize;i++)
 			System.out.println("Output Matrix ["+O[i]+"]");
+			
+		*/
 	}
 	
 	
 	void computeHagaShabahElMSE(int input_data_index) {
 		
 		 for(int i=0;i<outputNodesSize;i++) {
-			 MSE += finalOutputNodes[input_data_index][i] - O[i];
+			 MSE += ( finalOutputNodes[input_data_index][i] - O[input_data_index][i] );
 		 }
 		 MSE*=0.5;
+		 //MSE*=100; //because outputs are from 0-1 , had to renormalize them , so to speak.
+		 //MSE = (float) Math.pow(MSE, 2);
+		
+	}
+	
+	
+	//Apply Sigmoid function on all inputs and outputs + normalizing values to be 0 < X < 1.
+	void normalization() {
+		
+		for(int i=0;i<trainingSetSize;i++) {
+			
+			for(int j=0;j<inputNodesSize;j++) {
+				 inputNodes[i][j]/=100; //because there are values exceeding 100.
+				 inputNodes[i][j] = (float) sigmoidFunction(inputNodes[i][j]);
+			}
+				
+			
+			for(int j=0;j<outputNodesSize;j++) {
+				finalOutputNodes[i][j]/=100; //because there are values exceeding 100.
+				finalOutputNodes[i][j] = (float) sigmoidFunction(finalOutputNodes[i][j]);
+			}
+				
+			
+		}
+		
+		
 	}
 	
 	
@@ -212,11 +249,12 @@ public class NeuralNetwork {
 		for(int i=0 ; i<outputNodesSize;i++) {
 			
 			delta = new float[outputNodesSize];
-			error = finalOutputNodes[input_data_index][i]-O[i];
-			delta[i] = (float) ((-1*error)*sigmoidDerivative(O[i]));	
+			error = finalOutputNodes[input_data_index][i]-O[input_data_index][i];
+			delta[i] = (float) ((-1*error)*sigmoidDerivative(O[input_data_index][i]));	
 		
-		for(int j=0;i<hiddenNodesSize;j++) {
-			change_in_delta = (float) (learningRate * delta[i] * I[j]);
+		for(int j=0;j<hiddenNodesSize;j++) {
+			
+			 change_in_delta = (float) (learningRate * delta[i] * I[input_data_index][j]);
 			 hoWeights[i][j]= oldWeights[i][j] - change_in_delta;
 		   }
 		
@@ -230,11 +268,11 @@ public class NeuralNetwork {
 			
 			
 			for(int y=0;y<outputNodesSize;y++) {
-				error += ( ( finalOutputNodes[input_data_index][i]-O[i] ) * oldWeights[i][y] );
+				error += ( ( finalOutputNodes[input_data_index][y]-O[input_data_index][y] ) * oldWeights[y][i] );
 			}
 			
 			for(int j=0;j<inputNodesSize;j++) {
-				delta[i] = (float) (sigmoidDerivative(I[i])*error); //de momkn bara aw gwa el for loop m3rfsh.
+				delta[i] = (float) (sigmoidDerivative(I[input_data_index][i])*error);
 				change_in_delta = (float) (learningRate * delta[i]*inputNodes[input_data_index][j]);
 				ihWeights[i][j] = ihWeights[i][j] - change_in_delta;
 			}
@@ -244,6 +282,54 @@ public class NeuralNetwork {
 		
 	}
 	
+	void results_to_outputfile(int current_epoch , double current_MSE) {
+		
+		
+		
+		
+		
+	}
+	
+	
+	void train() {
+		
+		  double percentage_done;
+		  initializeWeights();
+		  normalization();
+		  
+		 //iterate on all the data set max_epochs times.
+		 for(int i=0; i<max_epochs ; i++) {
+			//Initialize MSE at the beginning of each iteration on the data set.
+			 MSE = 0; 
+			 System.out.println("epoche #"+i +" MSE computed : " + MSE);
+			  //iterate on data set records one by one.
+			  for(int j=0;j<trainingSetSize;j++) {
+				   
+				   //feed forward & back propagate on every record in the data set.
+				   feedForward(j); 
+				   computeHagaShabahElMSE(j);
+				   System.out.println("MSE --> "+MSE);
+				   backPropagation(j);
+				  
+			       // percentage_done = ((float)i/max_epochs)*100;
+			  
+				   //System.out.println(String.format("%d %% iterations done", (int)percentage_done));
+				   
+				   System.out.println("data record #" + j);
+				   for(int x=0;x<outputNodesSize;x++) 
+				   {
+					   System.out.println("Actual output : " + finalOutputNodes[j][x] + " " + "Computed output : "+ O[j][x]);
+				   }
+				   
+			
+			   
+			  }
+			   //if i reached an acceptable error i can break.
+			    //if(MSE < max_acceptable_error && MSE > min_acceptable_error)
+			    	//break;
+		 }
+		
+	}
 	
 	
 	

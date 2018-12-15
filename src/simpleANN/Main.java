@@ -6,10 +6,11 @@ public class Main {
 		
 		NeuralNetwork n = new NeuralNetwork();
 		
-		n.readFile("SimpleExample.txt");
+		n.readFile("train.txt");
+		n.train();
+		//n.initializeWeights();
+		//n.feedForward(0);
 		
-		n.initializeWeights();
-		n.matrixMultiplication(0);
 	}
 
 }
