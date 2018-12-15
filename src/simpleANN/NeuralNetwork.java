@@ -26,8 +26,8 @@ public class NeuralNetwork {
 	 float[]netOHWeights;
 	 float[]I;
 	 float[]O;
-	 float[]OutputNodes;
 	 float MSE;
+	 double learningRate=0.4;
 	 
 	
 	 
@@ -174,18 +174,19 @@ public class NeuralNetwork {
 			}
 		}
         
-        for(int i=0; i < outputNodesSize ; i++) //applying activation function (sigmoid function) 
+        //applying activation function (sigmoid function) 
+        for(int i=0; i < outputNodesSize ; i++) 
 			O[i]=(float) sigmoidFunction( netOHWeights[i] );
 		 
 		for(int i=0;i<hiddenNodesSize;i++)
-			System.out.println("Hiden Marix["+I[i]+"]");
+			System.out.println("Hidden Marix["+I[i]+"]");
 		
 		for(int i=0;i<outputNodesSize;i++)
-			System.out.println("Outpu Matrix ["+O[i]+"]");
+			System.out.println("Output Matrix ["+O[i]+"]");
 	}
 	
 	
-	void computeMSE(int input_data_index) {
+	void computeHagaShabahElMSE(int input_data_index) {
 		
 		 for(int i=0;i<outputNodesSize;i++) {
 			 MSE += finalOutputNodes[input_data_index][i] - O[i];
@@ -194,8 +195,51 @@ public class NeuralNetwork {
 	}
 	
 	
-	void backPropagation() {
+	void backPropagation(int input_data_index) {
 		
+		 float error=0,change_in_delta;
+		 float[][] oldWeights = new float[outputNodesSize][hiddenNodesSize];
+		 float delta[];
+		 
+		for(int i=0;i<outputNodesSize;i++) {
+				
+		    for(int j=0;j<hiddenNodesSize;j++) {
+					oldWeights[i][j] = hoWeights[i][j];
+				}
+		}
+		 
+		//updating weights for the output-hidden layers.
+		for(int i=0 ; i<outputNodesSize;i++) {
+			
+			delta = new float[outputNodesSize];
+			error = finalOutputNodes[input_data_index][i]-O[i];
+			delta[i] = (float) ((-1*error)*sigmoidDerivative(O[i]));	
+		
+		for(int j=0;i<hiddenNodesSize;j++) {
+			change_in_delta = (float) (learningRate * delta[i] * I[j]);
+			 hoWeights[i][j]= oldWeights[i][j] - change_in_delta;
+		   }
+		
+		}
+		
+		
+		//update weights for the input-hidden layers.
+		for(int i=0;i<hiddenNodesSize;i++) {
+			
+			delta = new float[hiddenNodesSize];
+			
+			
+			for(int y=0;y<outputNodesSize;y++) {
+				error += ( ( finalOutputNodes[input_data_index][i]-O[i] ) * oldWeights[i][y] );
+			}
+			
+			for(int j=0;j<inputNodesSize;j++) {
+				delta[i] = (float) (sigmoidDerivative(I[i])*error); //de momkn bara aw gwa el for loop m3rfsh.
+				change_in_delta = (float) (learningRate * delta[i]*inputNodes[input_data_index][j]);
+				ihWeights[i][j] = ihWeights[i][j] - change_in_delta;
+			}
+			
+		}
 		
 		
 	}
