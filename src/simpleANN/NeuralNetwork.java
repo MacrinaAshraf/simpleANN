@@ -27,11 +27,11 @@ public class NeuralNetwork {
 	 float[][]I;
 	 float[][]O;
 	 float MSE;
-	 double learningRate=0.4; //can be between 0.1-0.8 (tune it to make better results)
+	 double learningRate=0.7; //can be between 0.1-0.8 (tune it to make better results)
 	 
 	 //will break when it reaches these acceptable errors otherwise will run all max_epochs.
-     double max_acceptable_error = 0.004; 
-     double min_acceptable_error = -0.004;
+     double max_acceptable_error = 0.0005; 
+     double min_acceptable_error = -0.0005;
      int max_epochs = 500; //number of iterations on all the data set.
 	 
 	 
@@ -202,9 +202,7 @@ public class NeuralNetwork {
 		 for(int i=0;i<outputNodesSize;i++) {
 			 MSE += ( finalOutputNodes[input_data_index][i] - O[input_data_index][i] );
 		 }
-		 MSE*=0.5;
-		 //MSE*=100; //because outputs are from 0-1 , had to renormalize them , so to speak.
-		 //MSE = (float) Math.pow(MSE, 2);
+		 MSE*=(-0.5);
 		
 	}
 	
@@ -296,37 +294,38 @@ public class NeuralNetwork {
 		  double percentage_done;
 		  initializeWeights();
 		  normalization();
+		  int p=10;
 		  
 		 //iterate on all the data set max_epochs times.
 		 for(int i=0; i<max_epochs ; i++) {
 			//Initialize MSE at the beginning of each iteration on the data set.
 			 MSE = 0; 
-			 System.out.println("epoche #"+i +" MSE computed : " + MSE);
+			 System.out.println("epoche #"+i);
 			  //iterate on data set records one by one.
 			  for(int j=0;j<trainingSetSize;j++) {
 				   
 				   //feed forward & back propagate on every record in the data set.
 				   feedForward(j); 
 				   computeHagaShabahElMSE(j);
-				   System.out.println("MSE --> "+MSE);
 				   backPropagation(j);
 				  
-			       // percentage_done = ((float)i/max_epochs)*100;
-			  
-				   //System.out.println(String.format("%d %% iterations done", (int)percentage_done));
-				   
-				   System.out.println("data record #" + j);
-				   for(int x=0;x<outputNodesSize;x++) 
-				   {
-					   System.out.println("Actual output : " + finalOutputNodes[j][x] + " " + "Computed output : "+ O[j][x]);
-				   }
-				   
-			
-			   
+			        percentage_done = ((float)i/max_epochs)*100;
+			        if( (int)percentage_done == p) {
+			        	System.out.println(String.format("%d %%iterations done", (int)percentage_done)); 
+						   p+=10;
+			        }
+			        
+			        System.out.println("data record #" + j);
+					   for(int x=0;x<outputNodesSize;x++) 
+					   {
+						   System.out.println("Actual output : " + finalOutputNodes[j][x] + " " + "Computed output : "+ O[j][x]);
+					   }  
+			        
 			  }
+			  System.out.println("MSE --> "+ MSE);
 			   //if i reached an acceptable error i can break.
-			    //if(MSE < max_acceptable_error && MSE > min_acceptable_error)
-			    	//break;
+			    if(MSE < max_acceptable_error && MSE > min_acceptable_error)
+			    	break;
 		 }
 		
 	}
