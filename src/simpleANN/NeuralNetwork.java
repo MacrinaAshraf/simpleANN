@@ -2,8 +2,10 @@ package simpleANN;
 
 
 import java.io.BufferedReader;
+import java.io.BufferedWriter;
 import java.io.FileNotFoundException;
 import java.io.FileReader;
+import java.io.FileWriter;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
@@ -27,12 +29,12 @@ public class NeuralNetwork {
 	 float[][]I;
 	 float[][]O;
 	 float MSE;
-	 double learningRate=0.7; //can be between 0.1-0.8 (tune it to make better results)
+	 double learningRate = 0.8; //can be between 0.1-0.8 (tune it to make better results)
 	 
 	 //will break when it reaches these acceptable errors otherwise will run all max_epochs.
      double max_acceptable_error = 0.0005; 
-     double min_acceptable_error = -0.0005;
-     int max_epochs = 500; //number of iterations on all the data set.
+     final private double min_acceptable_error = -0.0005;
+     final private int max_epochs = 5000; //number of iterations on all the data set.
 	 
 	 
 	
@@ -107,8 +109,6 @@ public class NeuralNetwork {
 		 
 	}
 	
-	
-	
 	public void initializeWeights() {
 		ihWeights = new float[hiddenNodesSize][inputNodesSize] ;
 		hoWeights = new float[outputNodesSize][hiddenNodesSize];
@@ -154,8 +154,7 @@ public class NeuralNetwork {
 		return output*(1-output);
 	}
 	
-	
-	public void feedForward(int input_data_index ){
+	public void feedForward(int input_data_index){
 		 netIHWeights = new float[hiddenNodesSize];
 		 netOHWeights = new float[outputNodesSize];
 		 I = new float [trainingSetSize][hiddenNodesSize];
@@ -196,19 +195,17 @@ public class NeuralNetwork {
 		*/
 	}
 	
-	
-	void computeHagaShabahElMSE(int input_data_index) {
+	public void computeHagaShabahElMSE(int input_data_index) {
 		
-		 for(int i=0;i<outputNodesSize;i++) {
-			 MSE += ( finalOutputNodes[input_data_index][i] - O[input_data_index][i] );
+		 for(int i = 0; i < outputNodesSize; i++) {
+			 MSE += ( finalOutputNodes[input_data_index][i] - O[input_data_index][i]);
 		 }
-		 MSE*=(-0.5);
+		 MSE *= (0.5);
 		
 	}
 	
-	
 	//Apply Sigmoid function on all inputs and outputs + normalizing values to be 0 < X < 1.
-	void normalization() {
+	public void normalization() {
 		
 		for(int i=0;i<trainingSetSize;i++) {
 			
@@ -229,8 +226,7 @@ public class NeuralNetwork {
 		
 	}
 	
-	
-	void backPropagation(int input_data_index) {
+	public void backPropagation(int input_data_index) {
 		
 		 float error=0,change_in_delta;
 		 float[][] oldWeights = new float[outputNodesSize][hiddenNodesSize];
@@ -280,16 +276,47 @@ public class NeuralNetwork {
 		
 	}
 	
-	void results_to_outputfile(int current_epoch , double current_MSE) {
-		
-		
-		
-		
-		
+	public void weightsToOutputfile() {
+		FileWriter writer;
+		try {
+			writer = new FileWriter("output.txt");
+			BufferedWriter bufferedWriter = new BufferedWriter(writer);
+			
+			bufferedWriter.write(hiddenNodesSize + " " + inputNodesSize + " " + outputNodesSize);
+			bufferedWriter.newLine();
+			
+			for(int i=0;i<hiddenNodesSize;i++) 
+			{
+				
+			   for(int j=0;j<inputNodesSize;j++) 
+			   {
+				   bufferedWriter.append(Float.toString(ihWeights[i][j]) + " ");
+			   }				
+			   bufferedWriter.newLine();
+			}
+			
+			bufferedWriter.newLine();
+			
+			for(int i=0;i<outputNodesSize;i++) 
+			{
+				for(int j=0;j<hiddenNodesSize;j++) 
+				{
+					bufferedWriter.append(Float.toString(hoWeights[i][j]) + " ");
+				}				
+				bufferedWriter.newLine();
+			}
+			
+			bufferedWriter.flush();
+			bufferedWriter.close();
+			writer.close();
+		}
+		catch (IOException e) {
+			System.out.println("Problem with input/output.");
+			e.printStackTrace();
+		}
 	}
-	
-	
-	void train() {
+		
+	public void train() {
 		
 		  double percentage_done;
 		  initializeWeights();
@@ -310,17 +337,16 @@ public class NeuralNetwork {
 				   backPropagation(j);
 				  
 			        percentage_done = ((float)i/max_epochs)*100;
-			        if( (int)percentage_done == p) {
+			        if((int)percentage_done == p) {
 			        	System.out.println(String.format("%d %%iterations done", (int)percentage_done)); 
-						   p+=10;
-			        }
-			        
-			        System.out.println("data record #" + j);
-					   for(int x=0;x<outputNodesSize;x++) 
-					   {
+						p+=10;
+						System.out.println("data record #" + j);
+						for(int x=0;x<outputNodesSize;x++) 
+						{
 						   System.out.println("Actual output : " + finalOutputNodes[j][x] + " " + "Computed output : "+ O[j][x]);
-					   }  
-			        
+						}  
+						   
+			        }    
 			  }
 			  System.out.println("MSE --> "+ MSE);
 			   //if i reached an acceptable error i can break.
@@ -328,8 +354,79 @@ public class NeuralNetwork {
 			    	break;
 		 }
 		
+		 weightsToOutputfile();
 	}
 	
-	
-	
+	public void readWeightsFromFile() {
+		FileReader filereader;
+		BufferedReader in ;
+		
+		try {
+			filereader = new FileReader("output.txt");
+			
+			in = new BufferedReader(filereader);
+			String[] tmp;
+			
+			tmp = in.readLine().split("\\s+");
+			
+			hiddenNodesSize = Integer.parseInt(tmp[0]);
+			inputNodesSize = Integer.parseInt(tmp[1]);
+			outputNodesSize = Integer.parseInt(tmp[2]);
+			
+			ihWeights = new float[hiddenNodesSize][inputNodesSize] ;
+			hoWeights = new float[outputNodesSize][hiddenNodesSize];
+			
+			for(int i = 0; i < hiddenNodesSize; i++)
+			{
+				
+				tmp = in.readLine().trim().split("\\s+");
+				
+				for(int j = 0; j < tmp.length; j++) {
+						//System.out.println(tmp[2]);
+						ihWeights[i][j]= Float.parseFloat(tmp[j]);
+					//	System.out.print(ihWeights[i][j] + " ");
+				}
+				//System.out.println();
+			}
+			
+			tmp[0] = in.readLine();
+			
+			for(int i = 0; i < outputNodesSize; i++)
+			{
+				
+				tmp = in.readLine().trim().split("\\s+");
+				
+				for(int j = 0; j < tmp.length; j++) {
+						//System.out.println(tmp[2]);
+						hoWeights[i][j]= Float.parseFloat(tmp[j]);
+					//	System.out.print(hoWeights[i][j] + " ");
+				}
+				//System.out.println();
+			}
+			
+			filereader.close();
+		}
+	    
+		catch (FileNotFoundException e) {
+			System.out.println("File is not found.");
+			e.printStackTrace();
+		}
+		catch (IOException e) {
+			System.out.println("Problem with input/output.");
+			e.printStackTrace();
+		}	
+		
+	}
+
+	public void Test() {
+		readFile("test.txt");
+		readWeightsFromFile();
+		normalization();
+		feedForward(0);
+		computeHagaShabahElMSE(0);
+		for(int i = 0; i < outputNodesSize; i++)
+			System.out.println("Actual output : " + finalOutputNodes[0][i] + " " + "Computed output : "+ O[0][i]);
+		System.out.println("MSE --> "+ MSE);
+		
+	}
 }
