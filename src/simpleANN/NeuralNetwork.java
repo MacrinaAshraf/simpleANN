@@ -34,7 +34,7 @@ public class NeuralNetwork {
 	 //will break when it reaches these acceptable errors otherwise will run all max_epochs.
      double max_acceptable_error = 0.0005; 
      final private double min_acceptable_error = -0.0005;
-     final private int max_epochs = 5000; //number of iterations on all the data set.
+     final private int max_epochs = 3000; //number of iterations on all the data set.
 	 
 	 
 	
@@ -210,13 +210,13 @@ public class NeuralNetwork {
 		for(int i=0;i<trainingSetSize;i++) {
 			
 			for(int j=0;j<inputNodesSize;j++) {
-				 inputNodes[i][j]/=100; //because there are values exceeding 100.
+				 inputNodes[i][j]/=1000; //because there are values exceeding 100.
 				 inputNodes[i][j] = (float) sigmoidFunction(inputNodes[i][j]);
 			}
 				
 			
 			for(int j=0;j<outputNodesSize;j++) {
-				finalOutputNodes[i][j]/=100; //because there are values exceeding 100.
+				finalOutputNodes[i][j]/=1000; //because there are values exceeding 100.
 				finalOutputNodes[i][j] = (float) sigmoidFunction(finalOutputNodes[i][j]);
 			}
 				
@@ -422,10 +422,15 @@ public class NeuralNetwork {
 		readFile("test.txt");
 		readWeightsFromFile();
 		normalization();
-		feedForward(0);
-		computeHagaShabahElMSE(0);
-		for(int i = 0; i < outputNodesSize; i++)
-			System.out.println("Actual output : " + finalOutputNodes[0][i] + " " + "Computed output : "+ O[0][i]);
+		for(int i=0;i<trainingSetSize;i++) 
+		{
+			feedForward(i);
+			computeHagaShabahElMSE(i);
+			for(int j = 0; j < outputNodesSize; j++)
+				System.out.println("Actual output : " + finalOutputNodes[i][j] + " " + "Computed output : "+ O[i][j]);
+		}
+		
+		
 		System.out.println("MSE --> "+ MSE);
 		
 	}
